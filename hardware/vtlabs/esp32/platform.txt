@@ -1,0 +1,14 @@
+# VTLabs Training Kits - platform overrides
+#
+# Build and upload recipes are inherited from the referenced Espressif core
+# (boards use build.core=esp32:esp32). This file only overrides what must change.
+
+name=VTLabs Training Kits
+version=0.1.0
+
+# The Espressif core finds partition tables, boot_app0.bin, gen_esp32part.py and
+# flasher.py through {runtime.platform.path}. Under a core reference that path
+# would point at THIS folder and the build fails at the partition step
+# (verified 2026-10-21 with esp32 3.3.12 + Arduino CLI 1.5.0).
+# This flag makes it point at the Espressif core instead. Needs Arduino CLI >= 1.0.4.
+runtime.use_core_platform_path_for_runtime_platform_path=true

@@ -1,0 +1,101 @@
+# VTLabs Training Kits - board definitions
+# Platform: vtlabs:esp32  (requires the Espressif platform esp32:esp32, see README)
+#
+# Every board below uses the official Espressif core through a core reference
+# (build.core=esp32:esp32). Nothing from the Espressif core is copied here.
+#
+# Board IDs carry the hardware revision (…_r1). A new PCB revision gets a NEW
+# board ID and variant folder; existing IDs are never re-mapped.
+
+menu.UploadSpeed=Upload Speed
+menu.CPUFreq=CPU Frequency
+menu.PartitionScheme=Partition Scheme
+menu.DebugLevel=Core Debug Level
+menu.EraseFlash=Erase All Flash Before Sketch Upload
+
+##############################################################################
+# VTLabs IoT Training Kit ESP32 - hardware revision 1
+#
+# ASSUMPTIONS (to confirm against the physical board, see docs/02-stage2-board-definition.md):
+#   A1 module: ESP32-WROOM-32 family (classic ESP32, dual core Xtensa)
+#   A2 flash:  4 MB, DIO-capable;  A3 PSRAM: none
+#   A4 USB:    on-board USB-UART bridge with DTR/RTS auto-reset (CP2102/CH340/CH9102)
+##############################################################################
+
+vtlabs_iot_esp32_r1.name=VTLabs IoT Training Kit ESP32 (Rev 1)
+
+# --- core, variant, target -------------------------------------------------
+vtlabs_iot_esp32_r1.build.core=esp32:esp32
+vtlabs_iot_esp32_r1.build.variant=vtlabs_iot_esp32_r1
+vtlabs_iot_esp32_r1.build.board=VTLABS_IOT_ESP32_R1
+vtlabs_iot_esp32_r1.build.tarch=xtensa
+vtlabs_iot_esp32_r1.build.target=esp32
+vtlabs_iot_esp32_r1.build.mcu=esp32
+vtlabs_iot_esp32_r1.build.bootloader_addr=0x1000
+
+# --- fixed hardware facts (not user-selectable) ------------------------------
+vtlabs_iot_esp32_r1.build.flash_size=4MB
+vtlabs_iot_esp32_r1.build.flash_mode=dio
+vtlabs_iot_esp32_r1.build.boot=dio
+vtlabs_iot_esp32_r1.build.flash_freq=40m
+vtlabs_iot_esp32_r1.build.defines=-DVTLABS_BOARD_IOT_ESP32 -DVTLABS_HW_REV=1
+vtlabs_iot_esp32_r1.build.extra_libs=
+vtlabs_iot_esp32_r1.build.loop_core=
+vtlabs_iot_esp32_r1.build.event_core=
+
+# --- upload ---------------------------------------------------------------
+vtlabs_iot_esp32_r1.bootloader.tool=esptool_py
+vtlabs_iot_esp32_r1.bootloader.tool.default=esptool_py
+vtlabs_iot_esp32_r1.upload.tool=esptool_py
+vtlabs_iot_esp32_r1.upload.tool.default=esptool_py
+vtlabs_iot_esp32_r1.upload.tool.network=esp_ota
+vtlabs_iot_esp32_r1.upload.maximum_data_size=327680
+vtlabs_iot_esp32_r1.upload.flags=
+vtlabs_iot_esp32_r1.upload.erase_cmd=
+vtlabs_iot_esp32_r1.upload.extra_flags=
+vtlabs_iot_esp32_r1.serial.disableDTR=true
+vtlabs_iot_esp32_r1.serial.disableRTS=true
+vtlabs_iot_esp32_r1.monitor_port.serial.baudrate=115200
+
+# --- menus (first entry of each menu is the default) -------------------------
+vtlabs_iot_esp32_r1.menu.UploadSpeed.921600=921600
+vtlabs_iot_esp32_r1.menu.UploadSpeed.921600.upload.speed=921600
+vtlabs_iot_esp32_r1.menu.UploadSpeed.460800=460800
+vtlabs_iot_esp32_r1.menu.UploadSpeed.460800.upload.speed=460800
+vtlabs_iot_esp32_r1.menu.UploadSpeed.115200=115200 (slow, most reliable)
+vtlabs_iot_esp32_r1.menu.UploadSpeed.115200.upload.speed=115200
+
+vtlabs_iot_esp32_r1.menu.CPUFreq.240=240MHz (WiFi/BT)
+vtlabs_iot_esp32_r1.menu.CPUFreq.240.build.f_cpu=240000000L
+vtlabs_iot_esp32_r1.menu.CPUFreq.160=160MHz (WiFi/BT)
+vtlabs_iot_esp32_r1.menu.CPUFreq.160.build.f_cpu=160000000L
+vtlabs_iot_esp32_r1.menu.CPUFreq.80=80MHz (WiFi/BT)
+vtlabs_iot_esp32_r1.menu.CPUFreq.80.build.f_cpu=80000000L
+
+vtlabs_iot_esp32_r1.menu.PartitionScheme.default=Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)
+vtlabs_iot_esp32_r1.menu.PartitionScheme.default.build.partitions=default
+vtlabs_iot_esp32_r1.menu.PartitionScheme.default.upload.maximum_size=1310720
+vtlabs_iot_esp32_r1.menu.PartitionScheme.min_spiffs=Minimal SPIFFS (1.9MB APP with OTA/128KB SPIFFS)
+vtlabs_iot_esp32_r1.menu.PartitionScheme.min_spiffs.build.partitions=min_spiffs
+vtlabs_iot_esp32_r1.menu.PartitionScheme.min_spiffs.upload.maximum_size=1966080
+vtlabs_iot_esp32_r1.menu.PartitionScheme.huge_app=Huge APP (3MB No OTA/1MB SPIFFS)
+vtlabs_iot_esp32_r1.menu.PartitionScheme.huge_app.build.partitions=huge_app
+vtlabs_iot_esp32_r1.menu.PartitionScheme.huge_app.upload.maximum_size=3145728
+
+vtlabs_iot_esp32_r1.menu.DebugLevel.none=None
+vtlabs_iot_esp32_r1.menu.DebugLevel.none.build.code_debug=0
+vtlabs_iot_esp32_r1.menu.DebugLevel.error=Error
+vtlabs_iot_esp32_r1.menu.DebugLevel.error.build.code_debug=1
+vtlabs_iot_esp32_r1.menu.DebugLevel.warn=Warn
+vtlabs_iot_esp32_r1.menu.DebugLevel.warn.build.code_debug=2
+vtlabs_iot_esp32_r1.menu.DebugLevel.info=Info
+vtlabs_iot_esp32_r1.menu.DebugLevel.info.build.code_debug=3
+vtlabs_iot_esp32_r1.menu.DebugLevel.debug=Debug
+vtlabs_iot_esp32_r1.menu.DebugLevel.debug.build.code_debug=4
+vtlabs_iot_esp32_r1.menu.DebugLevel.verbose=Verbose
+vtlabs_iot_esp32_r1.menu.DebugLevel.verbose.build.code_debug=5
+
+vtlabs_iot_esp32_r1.menu.EraseFlash.none=Disabled
+vtlabs_iot_esp32_r1.menu.EraseFlash.none.upload.erase_cmd=
+vtlabs_iot_esp32_r1.menu.EraseFlash.all=Enabled
+vtlabs_iot_esp32_r1.menu.EraseFlash.all.upload.erase_cmd=-e
