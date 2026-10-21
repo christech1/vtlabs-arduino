@@ -14,5 +14,13 @@ examples and (later) the VTLabs training library.
 Boards:
 - `vtlabs:esp32:vtlabs_iot_esp32_r1` — VTLabs IoT Training Kit ESP32 (Rev 1)
 
-Install and test steps: `docs/02-stage2-board-definition.md`.
+Docs:
+- `docs/01-stage1-dependency-assessment.md` — verified platform research
+- `docs/02-stage2-board-definition.md` — developer install, compile, upload
+- `docs/03-online-deployment.md` — publish to Boards Manager from GitHub
+
 Compile everything: `scripts/compile-check.sh`.
+Release: bump `version=` in `hardware/vtlabs/esp32/platform.txt`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+Student install URL (after first release + GitHub Pages):
+`https://<owner>.github.io/<repo>/package_vtlabs_index.json`
