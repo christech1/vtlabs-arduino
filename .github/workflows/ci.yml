@@ -1,0 +1,58 @@
+# Compile every example for every VTLabs board on each push / pull request.
+# Also called by release.yml so nothing is published unless this passes.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+env:
+  ARDUINO_CLI_VERSION: "1.5.0"
+  ESP32_CORE_VERSION: "3.3.12"
+  ESP32_INDEX_URL: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Arduino CLI ${{ env.ARDUINO_CLI_VERSION }}
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+            | BINDIR="$HOME/bin" sh -s "$ARDUINO_CLI_VERSION"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Cache Arduino downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.arduino15/staging
+          key: arduino-staging-esp32-${{ env.ESP32_CORE_VERSION }}
+
+      - name: Install Espressif core ${{ env.ESP32_CORE_VERSION }}
+        run: |
+          arduino-cli config init --overwrite
+          arduino-cli config set board_manager.additional_urls "$ESP32_INDEX_URL"
+          arduino-cli core update-index
+          arduino-cli core install "esp32:esp32@$ESP32_CORE_VERSION"
+
+      - name: Make the VTLabs platform visible (developer install)
+        run: |
+          mkdir -p "$HOME/Arduino/hardware"
+          ln -s "$GITHUB_WORKSPACE/hardware/vtlabs" "$HOME/Arduino/hardware/vtlabs"
+          arduino-cli board listall vtlabs
+
+      - name: Compile all examples and test sketches
+        run: scripts/compile-check.sh
+
+      - name: Check the release archive and index can be built
+        run: |
+          VERSION="$(sed -n 's/^version=//p' hardware/vtlabs/esp32/platform.txt)"
+          tools/release/build-archive.sh "$VERSION"
+          python3 -I tools/release/make_index.py add --index /tmp/test_index.json \
+            --archive "dist/vtlabs-esp32-$VERSION.zip" --version "$VERSION" \
+            --boards-txt hardware/vtlabs/esp32/boards.txt \
+            --url-base "https://github.com/${{ github.repository }}/releases/download/v$VERSION"

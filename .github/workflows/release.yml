@@ -1,0 +1,78 @@
+# Publish a VTLabs platform release when a version tag is pushed:
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# 1. runs the full CI compile matrix
+# 2. builds dist/vtlabs-esp32-<version>.zip (refuses if platform.txt disagrees with the tag)
+# 3. creates the GitHub Release with that archive (fails if the release already exists)
+# 4. appends the version to package_vtlabs_index.json on the gh-pages branch
+# 5. downloads the published archive and checks it matches the index checksum
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Build release archive
+        run: tools/release/build-archive.sh "$VERSION"
+
+      - name: Prepare gh-pages checkout
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git fetch origin gh-pages:gh-pages
+            git worktree add site gh-pages
+          else
+            git worktree add --detach site
+            git -C site checkout --orphan gh-pages
+            git -C site rm -rfq .
+          fi
+
+      - name: Add release to the index (local commit)
+        run: tools/release/update-pages.sh "$VERSION" "$GITHUB_REPOSITORY" site
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk "/^## /{p=0} /^## .*$VERSION/{p=1} p" CHANGELOG.md > /tmp/notes.md
+          [ -s /tmp/notes.md ] || echo "VTLabs Training Kits $VERSION" > /tmp/notes.md
+          gh release create "$GITHUB_REF_NAME" "dist/vtlabs-esp32-$VERSION.zip" \
+            --title "VTLabs Training Kits $VERSION" --notes-file /tmp/notes.md --verify-tag
+
+      - name: Publish the index
+        run: git -C site push origin gh-pages
+
+      - name: Verify the published archive matches the index
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json, os, urllib.request
+          v = os.environ["VERSION"]
+          idx = json.load(open("site/package_vtlabs_index.json"))
+          entry = [p for p in idx["packages"][0]["platforms"] if p["version"] == v][0]
+          data = urllib.request.urlopen(entry["url"]).read()
+          got = "SHA-256:" + hashlib.sha256(data).hexdigest()
+          assert got == entry["checksum"], f"checksum mismatch {got} != {entry['checksum']}"
+          assert str(len(data)) == entry["size"], "size mismatch"
+          print("published archive OK:", entry["url"])
+          EOF
