@@ -1,0 +1,81 @@
+{
+  "packages": [
+    {
+      "name": "vtlabs",
+      "maintainer": "VTLabs",
+      "websiteURL": "https://github.com/christech1/vtlabs-arduino",
+      "email": "",
+      "help": {
+        "online": "https://github.com/christech1/vtlabs-arduino#readme"
+      },
+      "platforms": [
+        {
+          "name": "VTLabs Training Kits",
+          "architecture": "esp32",
+          "version": "0.2.0",
+          "category": "Contributed",
+          "help": {
+            "online": "https://github.com/christech1/vtlabs-arduino#readme"
+          },
+          "url": "https://github.com/christech1/vtlabs-arduino/releases/download/v0.2.0/vtlabs-esp32-0.2.0.zip",
+          "archiveFileName": "vtlabs-esp32-0.2.0.zip",
+          "checksum": "SHA-256:2ace82f99707ac8d4f40f1713a5c893eae066321a9f0f5b8b065365c6297bc6d",
+          "size": "113579",
+          "boards": [
+            {
+              "name": "VTLabs IoT Training Kit ESP32 (Rev 1)"
+            }
+          ],
+          "toolsDependencies": [],
+          "libraryDependencies": [
+            {
+              "name": "Adafruit GFX Library",
+              "version": "1.13.0"
+            },
+            {
+              "name": "Adafruit BusIO",
+              "version": "1.17.4"
+            },
+            {
+              "name": "Adafruit SSD1306",
+              "version": "2.5.17"
+            },
+            {
+              "name": "Adafruit Unified Sensor",
+              "version": "1.1.15"
+            },
+            {
+              "name": "DHT sensor library",
+              "version": "1.4.7"
+            },
+            {
+              "name": "Adafruit BME280 Library",
+              "version": "2.3.0"
+            },
+            {
+              "name": "Adafruit NeoPixel",
+              "version": "1.15.5"
+            },
+            {
+              "name": "Adafruit NeoMatrix",
+              "version": "1.3.3"
+            },
+            {
+              "name": "MD_MAX72XX",
+              "version": "3.5.1"
+            },
+            {
+              "name": "MD_Parola",
+              "version": "3.7.7"
+            },
+            {
+              "name": "PubSubClient",
+              "version": "2.8"
+            }
+          ]
+        }
+      ],
+      "tools": []
+    }
+  ]
+}
