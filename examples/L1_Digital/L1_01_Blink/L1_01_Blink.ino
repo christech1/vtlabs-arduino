@@ -1,29 +1,19 @@
 /*
-  VTLabs IoT Training Kit - Level 1, Lesson 1: Blink
-
-  Purpose
-    Confirm the board, driver, upload and the on-board LED all work.
-    Introduces pinMode(), digitalWrite() and delay().
-
-  Board
-    Tools > Board > VTLabs Training Kits > VTLabs IoT Training Kit ESP32 (Rev 1)
-
-  Wiring
-    None. Uses the on-board LED (LED_BUILTIN, defined by the VTLabs board).
-
-  Expected behaviour
-    The on-board LED turns on for 0.5 s and off for 0.5 s, forever.
-    The Serial Monitor (115200 baud) prints "LED ON" / "LED OFF".
-
-  Required libraries
-    None.
-
-  Troubleshooting
-    - "LED_BUILTIN was not declared": the VTLabs board is not selected.
-    - Upload stuck at "Connecting....": hold BOOT, press and release EN,
-      release BOOT, then upload again. Try Upload Speed = 115200.
-    - Uploads but LED does not blink: the LED may be on another GPIO on your
-      board revision - report it to VTLabs with a photo of the board.
+  VTLabs IoT Training Kit - L1_01 Blink
+  ------------------------------------------------------------------
+  Purpose:     Check that board, driver and upload work. Learn pinMode(),
+               digitalWrite() and delay().
+  Hardware:    On-board LED (LED_BUILTIN) - no wiring.
+  Libraries:   none
+  Expected:    LED on 0.5 s, off 0.5 s. Serial Monitor (115200): "LED ON" / "LED OFF".
+  Experiments: 1. Change both delays to 100 ms. What do you see?
+               2. Make a "heartbeat": two short blinks, then a pause.
+               3. Blink VTL_PIN_LED_RED instead (add #include <VTLabsKit.h>).
+  Troubleshooting:
+    - "LED_BUILTIN was not declared": select the VTLabs board in Tools > Board.
+    - Upload stuck at "Connecting...": hold BOOT, tap EN, release BOOT, upload again.
+    - Uploads but no blink: your board revision may use another LED pin - report it.
+  @requires: none
 */
 
 void setup() {

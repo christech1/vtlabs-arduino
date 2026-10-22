@@ -1,26 +1,36 @@
-# VTLabs Arduino Board Support
+# VTLabsKit
 
-Arduino board support for VTLabs training kits. Boards reuse the official
-Espressif ESP32 core; this repo adds VTLabs board definitions, pin variants,
-examples and (later) the VTLabs training library.
+Bundled with the **VTLabs Training Kits** board package. Header-only, so pin overrides made in a sketch
+(`#define VTL_PIN_X n` before the include) apply consistently.
 
-| Component | Version |
-|---|---|
-| VTLabs platform (`vtlabs:esp32`) | 0.1.0 (unreleased) |
-| Required Espressif core (`esp32:esp32`) | 3.3.x, tested 3.3.12 |
-| Arduino IDE | 2.3.3 or newer (1.8.x not supported) |
-| Arduino CLI | 1.0.4 or newer |
+## Headers
 
-Boards:
-- `vtlabs:esp32:vtlabs_iot_esp32_r1` — VTLabs IoT Training Kit ESP32 (Rev 1)
+| Header | Gives you | Needs |
+|---|---|---|
+| `<VTLabsKit.h>` | `VTL_PIN_*` names from the board profile, `VTL_ACTIVE_LEVEL(NAME)`, `vtlRelayWrite()`, `vtlPrintBoardInfo()`, `VTLButton`, `VTLLineInput`, `VTLMovingAverage<N>` | a VTLabs board selected |
+| `<VTLabsKeypad.h>` | `VTLKeypad`, `VTLKeyEvent` (`VTL_KEY_PRESSED / HELD / RELEASED`) | Tools > Keypad (add-on) set |
+| `<VTLabsMatrix.h>` | `VTLMatrix`, colours `VTL_RED`..., icons `vtl_icons::HEART`... | Tools > LED Matrix (add-on) set + driver libraries |
 
-Docs:
-- `docs/01-stage1-dependency-assessment.md` — verified platform research
-- `docs/02-stage2-board-definition.md` — developer install, compile, upload
-- `docs/03-online-deployment.md` — publish to Boards Manager from GitHub
+## Cheat sheet
 
-Compile everything: `scripts/compile-check.sh`.
-Release: bump `version=` in `hardware/vtlabs/esp32/platform.txt`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+```cpp
+VTLButton b;   b.begin(VTL_PIN_BTN1, VTL_PIN_BTN1_ACTIVE_LOW, VTL_PIN_BTN1_MODE);
+               b.update();  b.pressed();  b.released();  b.isDown();  b.heldMs();
 
-Student install URL (after first release + GitHub Pages):
-`https://<owner>.github.io/<repo>/package_vtlabs_index.json`
+VTLKeypad k;   k.begin();   char c = k.getKey();            // 0 if no new key
+               VTLKeyEvent e = k.update();  e.type, e.key;  k.scanRaw();
+
+VTLLineInput in;  in.begin(6);  if (in.feed(c)) { in.value(); in.text(); in.masked(); }  // * = delete, # = enter
+
+VTLMatrix m;   m.begin();  m.clear();  m.setColor(VTL_GREEN);  m.setPixel(x, y);  m.show();
+               m.drawIcon(vtl_icons::CHECK);  m.showSmallText("42");  m.showNumber(1234);
+               m.drawLevel(percent);  m.setBrightness(percent);
+               m.scrollText("Hello");  /* in loop: */ m.scrollUpdate();
+```
+
+## Configuration macros (override before the include)
+
+`VTL_KEYPAD_DEBOUNCE_MS` (30), `VTL_KEYPAD_HOLD_MS` (700), `VTL_KEYPAD_KEYMAP`, `VTL_KEYPAD_COL_INPUT_MODE`,
+`VTL_WS2812_MAX_BRIGHTNESS`, `VTL_MATRIX_FLIP_X`, `VTL_MATRIX_FLIP_Y`, and every `VTL_PIN_*`.
+
+Full documentation: `docs/` in the source repository.

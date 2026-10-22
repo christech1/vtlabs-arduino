@@ -25,9 +25,9 @@ import sys
 PACKAGE_META = {
     "name": "vtlabs",
     "maintainer": "VTLabs",
-    "websiteURL": os.environ.get("VTLABS_WEBSITE", "https://github.com/OWNER/REPO"),
-    "email": os.environ.get("VTLABS_EMAIL", ""),
-    "help": {"online": os.environ.get("VTLABS_HELP", "https://github.com/OWNER/REPO")},
+    "websiteURL": os.environ.get("VTLABS_WEBSITE", "https://github.com/christech1/vtlabs-arduino"),
+    "email": os.environ.get("VTLABS_EMAIL", "vtlabsgroup@gmail.com"),
+    "help": {"online": os.environ.get("VTLABS_HELP", "https://github.com/christech1/vtlabs-arduino")},
 }
 ARCH = "esp32"
 PLATFORM_NAME = "VTLabs Training Kits"
