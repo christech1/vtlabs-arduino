@@ -1,5 +1,11 @@
 # Stage 2 & 3 — Minimal VTLabs Board Definition, Compile and Upload
 
+> **Updated 2026-10-22 (v0.2.0):** `boards.txt` and the variant are now generated from
+> `boards/vtlabs_iot_esp32_r1.toml`, examples moved into the bundled library
+> (`hardware/vtlabs/esp32/libraries/VTLabsKit/examples`, shown in the IDE under File > Examples > VTLabsKit),
+> and `scripts/compile-check.sh` was replaced by `scripts/compile_examples.py`.
+> See [04-customise-and-deploy.md](04-customise-and-deploy.md). The test results below are the original Stage 2 record.
+
 Date: 2026-10-21
 Status: **Stage 2 done and verified by compilation. Stage 3 (upload to real hardware) is waiting for you — follow Part B.**
 
@@ -96,7 +102,8 @@ Install or update to **Arduino IDE 2.3.3 or newer** from arduino.cc/en/software.
    Documents\Arduino\hardware\vtlabs\esp32\variants\vtlabs_iot_esp32_r1\pins_arduino.h
    ```
    Wrong depth is the #1 mistake: `boards.txt` must be exactly two folders below `hardware`.
-4. **Restart the IDE.**
+4. Install the example libraries once (Tools > Manage Libraries, list in [libraries.md](libraries.md)).
+5. **Restart the IDE.**
 
 ### Step 4 — Select the board
 *Tools > Board > VTLabs Training Kits > VTLabs IoT Training Kit ESP32 (Rev 1)*.
@@ -121,7 +128,7 @@ Linux: `~/.arduino15/packages/esp32/tools/esptool_py/5.3.1/esptool --port /dev/t
 If the exact folder name differs, look inside `...\packages\esp32\tools\esptool_py\` for the installed version. Copy the full output of both commands — especially the lines **Chip type**, **Features**, **Crystal**, and **Detected flash size**.
 
 ### Step 7 — Compile and upload Blink (Stage 3)
-1. Open `examples/L1_Digital/L1_01_Blink/L1_01_Blink.ino`.
+1. With the VTLabs board selected: File > Examples > VTLabsKit > L1_Digital > L1_01_Blink.
 2. Click **Verify**. Expected: "Sketch uses ~257 KB (19%)".
 3. Click **Upload**. Expected end of log: `Hard resetting via RTS pin...`
 4. Expected on the board: LED blinks at 1 Hz. *Tools > Serial Monitor* at 115200: `LED ON` / `LED OFF`.

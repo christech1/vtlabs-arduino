@@ -1,5 +1,5 @@
-# Compile every example for every VTLabs board on each push / pull request.
-# Also called by release.yml so nothing is published unless this passes.
+# Checks on every push / pull request. Also called by release.yml, so nothing is
+# published unless all of this passes.
 name: CI
 
 on:
@@ -14,10 +14,30 @@ env:
   ESP32_INDEX_URL: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
 jobs:
-  compile:
+  profiles-and-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Hardware profiles valid and generated files up to date
+        run: python3 tools/vtlabs_board.py generate --check
+      - name: Board templates valid
+        run: python3 tools/vtlabs_board.py --profiles boards/templates check
+      - name: Curriculum catalogue up to date
+        run: python3 tools/make_catalogue.py --check
+      - name: Pin checker unit tests
+        run: python3 -m unittest discover -s tests -p "test_*.py" -v
+
+  compile:
+    needs: profiles-and-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Install Arduino CLI ${{ env.ARDUINO_CLI_VERSION }}
         run: |
@@ -30,14 +50,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.arduino15/staging
-          key: arduino-staging-esp32-${{ env.ESP32_CORE_VERSION }}
+          key: arduino-staging-esp32-${{ env.ESP32_CORE_VERSION }}-${{ hashFiles('libraries.txt') }}
 
-      - name: Install Espressif core ${{ env.ESP32_CORE_VERSION }}
+      - name: Install Espressif core ${{ env.ESP32_CORE_VERSION }} and libraries
         run: |
           arduino-cli config init --overwrite
           arduino-cli config set board_manager.additional_urls "$ESP32_INDEX_URL"
           arduino-cli core update-index
           arduino-cli core install "esp32:esp32@$ESP32_CORE_VERSION"
+          python3 scripts/install_libraries.py
 
       - name: Make the VTLabs platform visible (developer install)
         run: |
@@ -45,10 +66,25 @@ jobs:
           ln -s "$GITHUB_WORKSPACE/hardware/vtlabs" "$HOME/Arduino/hardware/vtlabs"
           arduino-cli board listall vtlabs
 
-      - name: Compile all examples and test sketches
-        run: scripts/compile-check.sh
+      - name: Compile every example for every supported Tools-menu combination
+        run: python3 scripts/compile_examples.py --jobs 3 --report docs/compile-report.md
 
-      - name: Check the release archive and index can be built
+      - name: Upload compile report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-report
+          path: docs/compile-report.md
+
+      - name: Custom board template (direct-GPIO keypad) builds keypad lessons
+        run: |
+          cp boards/templates/custom_devkit_keypad_gpio.toml boards/
+          python3 tools/vtlabs_board.py generate
+          python3 scripts/compile_examples.py --fqbn vtlabs:esp32:custom_devkit_keypad --only L6_Keypad \
+            --keypad-option Keypad=gpio_4x4 --combos K
+          rm boards/custom_devkit_keypad_gpio.toml && python3 tools/vtlabs_board.py generate
+
+      - name: Release archive and index can be built
         run: |
           VERSION="$(sed -n 's/^version=//p' hardware/vtlabs/esp32/platform.txt)"
           tools/release/build-archive.sh "$VERSION"

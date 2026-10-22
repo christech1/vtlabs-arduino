@@ -4,7 +4,7 @@
 # (boards use build.core=esp32:esp32). This file only overrides what must change.
 
 name=VTLabs Training Kits
-version=0.1.0
+version=0.2.0
 
 # The Espressif core finds partition tables, boot_app0.bin, gen_esp32part.py and
 # flasher.py through {runtime.platform.path}. Under a core reference that path

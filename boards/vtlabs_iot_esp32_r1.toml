@@ -1,0 +1,140 @@
+# =============================================================================
+#  VTLabs IoT Training Kit ESP32 - Rev 1 - HARDWARE PROFILE
+#
+#  This file is the ONLY place where this board's pins and add-on modules are
+#  defined. After editing, run:
+#
+#      python3 tools/vtlabs_board.py generate
+#
+#  which checks the pin map (conflicts, flash pins, input-only pins, strapping
+#  pins) and rewrites:
+#      hardware/vtlabs/esp32/boards.txt
+#      hardware/vtlabs/esp32/variants/vtlabs_iot_esp32_r1/pins_arduino.h
+#      hardware/vtlabs/esp32/variants/vtlabs_iot_esp32_r1/vtlabs_board.h
+#      docs/pinmaps/vtlabs_iot_esp32_r1.md
+#
+#  verified = false  means "taken from the design assumption, not yet measured
+#  on a real board". Set it to true after the hardware checklist passes.
+# =============================================================================
+
+[board]
+id       = "vtlabs_iot_esp32_r1"          # FQBN: vtlabs:esp32:vtlabs_iot_esp32_r1  (never reuse for different pins)
+name     = "VTLabs IoT Training Kit ESP32 (Rev 1)"
+hw_rev   = 1
+family   = "esp32"                         # pin rules + build settings for the classic ESP32
+module   = "ESP32-WROOM-32 (assumed)"
+verified = false
+
+[build]
+flash_size  = "4MB"
+flash_mode  = "dio"
+flash_freq  = "40m"
+psram       = false
+partitions  = ["default", "min_spiffs", "huge_app"]   # first one is the default
+upload_speeds = [921600, 460800, 115200]
+cpu_freqs   = [240, 160, 80]
+monitor_baud = 115200
+
+# -----------------------------------------------------------------------------
+# Standard Arduino bus pins (used by Serial, Wire, SPI, Serial2)
+# -----------------------------------------------------------------------------
+[bus]
+uart0_tx = 1
+uart0_rx = 3
+i2c_sda  = 21
+i2c_scl  = 22
+spi_sck  = 18
+spi_miso = 19
+spi_mosi = 23
+spi_ss   = 5
+uart2_rx = 16
+uart2_tx = 17
+
+# -----------------------------------------------------------------------------
+# On-board peripherals.  Every entry becomes   VTL_PIN_<NAME>   in code.
+#   mode : out | in | io | analog | pwm
+#   gpio : -1 means "not connected"
+#   active_low : the signal is ON/PRESSED when the pin reads LOW
+# ADD YOUR OWN PINS HERE - e.g.   SERVO = { gpio = 12, mode = "pwm", desc = "Servo signal" }
+# -----------------------------------------------------------------------------
+[pins]
+LED_BUILTIN = { gpio = 2,  mode = "out",    desc = "Blue LED on the ESP32 module", verified = false }
+LED_RED     = { gpio = 25, mode = "pwm",    desc = "Red LED (also DAC1 output)", verified = false }
+LED_GREEN   = { gpio = 26, mode = "pwm",    desc = "Green LED (also DAC2 output)", verified = false }
+LED_YELLOW  = { gpio = 27, mode = "pwm",    desc = "Yellow LED", verified = false }
+BUZZER      = { gpio = 33, mode = "pwm",    desc = "Passive buzzer via NPN transistor", verified = false }
+RELAY       = { gpio = 4,  mode = "out",    desc = "Relay driver (transistor + flyback diode), HIGH = ON", verified = false }
+BTN1        = { gpio = 35, mode = "in",     active_low = true, pull = "external", desc = "Push button 1 (10k pull-up on board)", verified = false }
+BTN2        = { gpio = 0,  mode = "in",     active_low = true, pull = "external", desc = "BOOT button on the ESP32 module", verified = false }
+SWITCH      = { gpio = 34, mode = "in",     active_low = true, pull = "external", desc = "Slide switch to GND (10k pull-up on board)", verified = false }
+POT         = { gpio = 36, mode = "analog", desc = "10k potentiometer wiper (0-3.3 V)", verified = false }
+LDR         = { gpio = 39, mode = "analog", desc = "LDR + 10k divider, brighter = higher voltage", verified = false }
+DHT         = { gpio = 32, mode = "io",     desc = "DHT22 temperature/humidity data", verified = false }
+PIR         = { gpio = 14, mode = "in",     desc = "HC-SR501 PIR motion output (HIGH = motion)", verified = false }
+SD_CS       = { gpio = 5,  mode = "out",    shares = "SPI_SS", desc = "Optional micro-SD module chip select (SPI)", verified = false }
+RS485_DE    = { gpio = -1, mode = "out",    desc = "Optional RS485 DE/RE; -1 = auto-direction module on Serial2", verified = false }
+
+# Settings that are not pins (become  VTL_<NAME>  macros)
+[settings]
+RELAY_ACTIVE_HIGH = 1
+DHT_TYPE          = "DHT22"
+OLED_WIDTH        = 128
+OLED_HEIGHT       = 64
+ADC_VREF_MV       = 3300
+
+# I2C devices (become  VTL_I2C_<NAME>  address macros)
+[i2c]
+OLED    = { addr = 0x3C, desc = "SSD1306 128x64 OLED (on board)", verified = false }
+BME280  = { addr = 0x76, desc = "Optional BME280 sensor module", verified = false }
+
+# =============================================================================
+# ADD-ON MODULES -> appear in Arduino IDE under Tools as a menu.
+# The first choice is the default. Pins listed in a choice exist only when that
+# choice is selected, and are checked against the on-board pins above.
+# =============================================================================
+
+[[option]]
+menu  = "Keypad"
+label = "Keypad (add-on)"
+
+  [[option.choice]]
+  id    = "none"
+  label = "Not fitted"
+  defines = { HAS_KEYPAD = 0 }
+
+  [[option.choice]]
+  id    = "pcf8574_4x4"
+  label = "4x4 keypad via PCF8574 (I2C 0x20)"
+  # PCF8574 P0..P3 = rows R1..R4, P4..P7 = columns C1..C4
+  defines = { HAS_KEYPAD = 1, KEYPAD_BACKEND = "VTL_KEYPAD_BACKEND_PCF8574", KEYPAD_ROWS = 4, KEYPAD_COLS = 4, KEYPAD_I2C_ADDR = "0x20", KEYPAD_KEYMAP = '"123A456B789C*0#D"' }
+
+  # All 25 usable GPIOs of this board are already allocated, so a direct-GPIO
+  # keypad (8 pins) is not offered here. For a board wired that way see
+  # boards/templates/custom_devkit_keypad_gpio.toml
+
+[[option]]
+menu  = "LedMatrix"
+label = "LED Matrix (add-on)"
+
+  [[option.choice]]
+  id    = "none"
+  label = "Not fitted"
+  defines = { HAS_MATRIX = 0 }
+
+  [[option.choice]]
+  id    = "max7219_4in1"
+  label = "MAX7219 32x8 (4-in-1 FC-16 module, SPI)"
+  defines = { HAS_MATRIX = 1, MATRIX_DRIVER = "VTL_MATRIX_DRIVER_MAX7219", MATRIX_WIDTH = 32, MATRIX_HEIGHT = 8, MAX7219_HW_TYPE = "MD_MAX72XX::FC16_HW", MAX7219_DEVICES = 4, MATRIX_FLIP_X = 0, MATRIX_FLIP_Y = 0 }
+  pins = { MAX7219_CS = { gpio = 15, mode = "out", desc = "MAX7219 LOAD/CS; DIN = MOSI (23), CLK = SCK (18)" } }
+
+  [[option.choice]]
+  id    = "max7219_8x8"
+  label = "MAX7219 8x8 (single module, SPI)"
+  defines = { HAS_MATRIX = 1, MATRIX_DRIVER = "VTL_MATRIX_DRIVER_MAX7219", MATRIX_WIDTH = 8, MATRIX_HEIGHT = 8, MAX7219_HW_TYPE = "MD_MAX72XX::GENERIC_HW", MAX7219_DEVICES = 1, MATRIX_FLIP_X = 0, MATRIX_FLIP_Y = 0 }
+  pins = { MAX7219_CS = { gpio = 15, mode = "out", desc = "MAX7219 LOAD/CS; DIN = MOSI (23), CLK = SCK (18)" } }
+
+  [[option.choice]]
+  id    = "ws2812_8x8"
+  label = "WS2812 RGB 8x8 (64 LEDs, 5 V)"
+  defines = { HAS_MATRIX = 1, MATRIX_DRIVER = "VTL_MATRIX_DRIVER_WS2812", MATRIX_WIDTH = 8, MATRIX_HEIGHT = 8, WS2812_COLOR_ORDER = "NEO_GRB", WS2812_LAYOUT = "(NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_PROGRESSIVE)", WS2812_MAX_BRIGHTNESS = 40, MATRIX_FLIP_X = 0, MATRIX_FLIP_Y = 0 }
+  pins = { WS2812_DIN = { gpio = 13, mode = "out", desc = "WS2812 data in, through 330 ohm (+ 3.3->5 V level shifter recommended)" } }

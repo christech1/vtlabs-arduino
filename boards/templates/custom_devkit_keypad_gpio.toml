@@ -1,0 +1,103 @@
+# =============================================================================
+#  TEMPLATE - a custom board: plain ESP32 DevKit on a breadboard, with a 4x4
+#  keypad wired straight to GPIOs (no PCF8574) and an optional MAX7219 8x8.
+#
+#  How to use it:
+#    1. Copy this file into boards/  (one level up) and rename it, e.g. boards/myschool_devkit_r1.toml
+#    2. Change [board] id and name. The id becomes the FQBN: vtlabs:esp32:<id>
+#    3. Edit the pins to match YOUR wiring. Add your own pins under [pins].
+#    4. python3 tools/vtlabs_board.py generate   (fix any ERROR it prints)
+#    5. Restart the Arduino IDE - the new board is in Tools > Board > VTLabs Training Kits.
+# =============================================================================
+
+[board]
+id       = "custom_devkit_keypad"
+name     = "Custom ESP32 DevKit + 4x4 keypad (template)"
+hw_rev   = 1
+family   = "esp32"
+module   = "ESP32 DevKit V1 (30 pin)"
+verified = false
+
+[build]
+flash_size  = "4MB"
+flash_mode  = "dio"
+flash_freq  = "40m"
+psram       = false
+partitions  = ["default", "huge_app"]
+upload_speeds = [921600, 115200]
+cpu_freqs   = [240, 160, 80]
+monitor_baud = 115200
+
+[bus]
+uart0_tx = 1
+uart0_rx = 3
+i2c_sda  = 21
+i2c_scl  = 22
+spi_sck  = 18
+spi_miso = 19
+spi_mosi = 23
+spi_ss   = 5
+uart2_rx = 16
+uart2_tx = 17
+
+# Every curriculum name must exist. Parts not on this breadboard use gpio = -1.
+[pins]
+LED_BUILTIN = { gpio = 2,  mode = "out",    desc = "DevKit blue LED" }
+LED_RED     = { gpio = 25, mode = "pwm",    desc = "Red LED + 220 ohm" }
+LED_GREEN   = { gpio = 26, mode = "pwm",    desc = "Green LED + 220 ohm" }
+LED_YELLOW  = { gpio = 27, mode = "pwm",    desc = "Yellow LED + 220 ohm" }
+BUZZER      = { gpio = 12, mode = "pwm",    desc = "Passive buzzer via NPN (base resistor keeps GPIO12 LOW at boot)" }
+RELAY       = { gpio = 4,  mode = "out",    desc = "Relay module IN" }
+BTN1        = { gpio = 0,  mode = "in",     active_low = true, pull = "external", desc = "DevKit BOOT button" }
+BTN2        = { gpio = -1, mode = "in",     desc = "not fitted" }
+SWITCH      = { gpio = -1, mode = "in",     desc = "not fitted" }
+POT         = { gpio = -1, mode = "analog", desc = "not fitted (all ADC1 pins used by the keypad)" }
+LDR         = { gpio = -1, mode = "analog", desc = "not fitted" }
+DHT         = { gpio = -1, mode = "io",     desc = "not fitted" }
+PIR         = { gpio = -1, mode = "in",     desc = "not fitted" }
+SD_CS       = { gpio = 5,  mode = "out",    shares = "SPI_SS", desc = "micro-SD CS" }
+RS485_DE    = { gpio = -1, mode = "out",    desc = "not fitted" }
+# your own pins, for example:
+# SERVO     = { gpio = 15, mode = "pwm", desc = "Servo signal" }
+
+[settings]
+RELAY_ACTIVE_HIGH = 0          # most blue relay modules switch ON with a LOW input
+DHT_TYPE          = "DHT22"
+OLED_WIDTH        = 128
+OLED_HEIGHT       = 64
+ADC_VREF_MV       = 3300
+
+[i2c]
+OLED    = { addr = 0x3C, desc = "SSD1306 OLED" }
+BME280  = { addr = 0x76, desc = "BME280 (optional)" }
+
+[[option]]
+menu  = "Keypad"
+label = "Keypad (add-on)"
+
+  [[option.choice]]
+  id    = "none"
+  label = "Not fitted"
+  defines = { HAS_KEYPAD = 0 }
+
+  [[option.choice]]
+  id    = "gpio_4x4"
+  label = "4x4 keypad on GPIO (rows 13/14/32/33, cols 34/35/36/39)"
+  # Columns are input-only pins: fit 10k pull-up resistors from each column to 3V3.
+  defines = { HAS_KEYPAD = 1, KEYPAD_BACKEND = "VTL_KEYPAD_BACKEND_GPIO", KEYPAD_ROWS = 4, KEYPAD_COLS = 4, KEYPAD_KEYMAP = '"123A456B789C*0#D"', KEYPAD_COL_INPUT_MODE = "INPUT" }
+  pins = { KEYPAD_R1 = { gpio = 13, mode = "out" }, KEYPAD_R2 = { gpio = 14, mode = "out" }, KEYPAD_R3 = { gpio = 32, mode = "out" }, KEYPAD_R4 = { gpio = 33, mode = "out" }, KEYPAD_C1 = { gpio = 34, mode = "in", pull = "external" }, KEYPAD_C2 = { gpio = 35, mode = "in", pull = "external" }, KEYPAD_C3 = { gpio = 36, mode = "in", pull = "external" }, KEYPAD_C4 = { gpio = 39, mode = "in", pull = "external" } }
+
+[[option]]
+menu  = "LedMatrix"
+label = "LED Matrix (add-on)"
+
+  [[option.choice]]
+  id    = "none"
+  label = "Not fitted"
+  defines = { HAS_MATRIX = 0 }
+
+  [[option.choice]]
+  id    = "max7219_8x8"
+  label = "MAX7219 8x8 (CS on GPIO15)"
+  defines = { HAS_MATRIX = 1, MATRIX_DRIVER = "VTL_MATRIX_DRIVER_MAX7219", MATRIX_WIDTH = 8, MATRIX_HEIGHT = 8, MAX7219_HW_TYPE = "MD_MAX72XX::GENERIC_HW", MAX7219_DEVICES = 1, MATRIX_FLIP_X = 0, MATRIX_FLIP_Y = 0 }
+  pins = { MAX7219_CS = { gpio = 15, mode = "out", desc = "MAX7219 CS" } }

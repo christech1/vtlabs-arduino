@@ -25,9 +25,9 @@ import sys
 PACKAGE_META = {
     "name": "vtlabs",
     "maintainer": "VTLabs",
-    "websiteURL": os.environ.get("VTLABS_WEBSITE", "https://github.com/christech1/vtlabs-arduino"),
-    "email": os.environ.get("VTLABS_EMAIL", "vtlabsgroup@gmail.com"),
-    "help": {"online": os.environ.get("VTLABS_HELP", "https://github.com/christech1/vtlabs-arduino")},
+    "websiteURL": os.environ.get("VTLABS_WEBSITE", "https://github.com/OWNER/REPO"),
+    "email": os.environ.get("VTLABS_EMAIL", ""),
+    "help": {"online": os.environ.get("VTLABS_HELP", "https://github.com/OWNER/REPO")},
 }
 ARCH = "esp32"
 PLATFORM_NAME = "VTLabs Training Kits"
@@ -71,6 +71,18 @@ def board_names(boards_txt):
     if not names:
         sys.exit(f"no boards found in {boards_txt}")
     return names
+
+
+def library_dependencies():
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "libraries.txt")
+    deps = []
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                name, _, version = line.partition("@")
+                deps.append({"name": name.strip(), "version": version.strip()})
+    return deps
 
 
 def sha256(path):
@@ -151,6 +163,8 @@ def main():
             # Tools come from the referenced esp32:esp32 platform, which students
             # install separately (the index format has no platform dependencies).
             "toolsDependencies": [],
+            # Installed together with the platform by Arduino IDE >= 2.4.0 / CLI >= 1.5.0.
+            "libraryDependencies": library_dependencies(),
         }
         pkg["platforms"].append(entry)
         print(json.dumps(entry, indent=2))

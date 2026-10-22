@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 WebServer server(80);
+// @requires: none
 void setup() {
   WiFi.mode(WIFI_AP);
   WiFi.softAP("VTLabs-Test", "vtlabs1234");

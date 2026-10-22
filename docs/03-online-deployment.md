@@ -36,7 +36,7 @@ The `main` branch never contains the index, and `gh-pages` never contains source
 | `.github/workflows/ci.yml` | On every push/PR: install Arduino CLI 1.5.0 + esp32 3.3.12, compile all sketches, test that the archive and index can be built |
 | `.github/workflows/release.yml` | On tag `vX.Y.Z`: CI, then build, release, index, verify |
 | `tools/release/build-archive.sh` | Builds the zip: one root folder, reproducible timestamps, refuses version mismatch or overwrite |
-| `tools/release/make_index.py` | `add` / `deprecate` / `check` the index; SHA-256 and size computed from the real file; refuses to re-publish an existing version |
+| `tools/release/make_index.py` | `add` / `deprecate` / `check` the index; SHA-256 and size computed from the real file; refuses to re-publish an existing version; adds `libraryDependencies` from `libraries.txt` |
 | `tools/release/update-pages.sh` | Adds a version to the gh-pages checkout and writes a small install page (`index.html`) |
 
 ---
@@ -51,6 +51,7 @@ The `main` branch never contains the index, and `gh-pages` never contains source
 | Upgrade 0.1.0 → 0.1.1 (`core upgrade`) | PASS |
 | Rollback to 0.1.0 (`core install vtlabs:esp32@0.1.0`) | PASS |
 | `deprecate 0.1.1` | Boards Manager lists it as `[DEPRECATED]` |
+| `libraryDependencies` (2026-10-22): index served locally, `core install vtlabs:esp32@0.2.0` with Arduino CLI 1.5.0 and a local stand-in for the Library Manager index | PubSubClient 2.8 and MD_MAX72XX 3.5.1 downloaded and installed **before** the platform; 0.2.0 archive contains VTLabsKit + 64 lessons |
 | Tampered archive | Install refused: "archive hash differs from hash in index" |
 | Release job's git steps against a simulated remote, two releases | gh-pages holds `.nojekyll`, `index.html`, index with both versions; `main` untouched |
 | Both workflows against GitHub's official workflow JSON schema | PASS |
@@ -87,13 +88,13 @@ Settings → **Actions → General → Workflow permissions** → "Read and writ
 (The workflow already asks for `contents: write`; organisation repos sometimes block that by default.)
 
 ### Step 6 — Publish the first release
-1. In `CHANGELOG.md`, rename `## [Unreleased] 0.1.0` to `## [0.1.0] - 2026-10-21`. Commit and push.
+1. In `CHANGELOG.md`, rename `## [Unreleased] 0.2.0` to `## [0.2.0] - <date>`. Commit and push.
 2. Tag and push:
    ```
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag v0.2.0
+   git push origin v0.2.0
    ```
-3. Actions → "Release" runs. When green you have: a Release `v0.1.0` with `vtlabs-esp32-0.1.0.zip`, and a new `gh-pages` branch.
+3. Actions → "Release" runs. When green you have: a Release `v0.2.0` with `vtlabs-esp32-0.2.0.zip`, and a new `gh-pages` branch.
 
 ### Step 7 — Turn on GitHub Pages (once)
 Settings → **Pages** → Source: "Deploy from a branch" → Branch: `gh-pages`, folder `/ (root)` → Save.
@@ -104,7 +105,7 @@ After 1–2 minutes, open `https://<owner>.github.io/vtlabs-arduino/`. You shoul
 1. **Remove** your developer copy `Documents\Arduino\hardware\vtlabs` and restart the IDE (otherwise the IDE uses that copy and you're not testing the release).
 2. File → Preferences → Additional boards manager URLs: add the Espressif URL **and**
    `https://<owner>.github.io/vtlabs-arduino/package_vtlabs_index.json` (one per line).
-3. Boards Manager → install **esp32 by Espressif Systems 3.3.12**, then search **VTLabs** → install **VTLabs Training Kits 0.1.0**.
+3. Boards Manager → install **esp32 by Espressif Systems 3.3.12**, then search **VTLabs** → install **VTLabs Training Kits 0.2.0**. Arduino IDE 2.4+ also installs the example libraries listed in `libraries.txt` (older IDEs: see [libraries.md](libraries.md)).
 4. Select the board, upload Blink. This closes Stage 8 of the plan.
 
 ---
